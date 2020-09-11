@@ -2,10 +2,12 @@ import React from "react";
 import "./Subtotal.css";
 import CurrencyFormat from "react-currency-format";
 import { useStateValue } from "./StateProvider";
+import { getBasketTotal } from "./reducer";
 
 function Subtotal() {
   const [{ basket }, dispatch] = useStateValue();
 
+  // Here for later reference. Extra.
   Array.prototype.sum = function (prop) {
     var total = 0;
     for (var i = 0; i < this.length; i++) {
@@ -29,7 +31,7 @@ function Subtotal() {
           </>
         )}
         decimalScale={2}
-        value={basket.sum("price")} // another option: {getBasketTotal(basket)}
+        value={getBasketTotal(basket)} // another option using Array.prototype above: {basket.sum("price")}
         displayType={"text"}
         thousandSeparator={true}
         prefix={"$"}
