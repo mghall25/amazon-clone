@@ -1,0 +1,6 @@
+To deploy with hosting on Firebase, these steps were taken:
+•	npm i -g firebase-tools to install firebase-tools
+•	firebase login
+•	firebase init > hosting > y for one-page app
+•	npm run build (if you make any changes locally, you’ll run this command again to redeploy it)
+•	firebase deploy
