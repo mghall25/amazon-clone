@@ -7,6 +7,7 @@ import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { getBasketTotal } from "./reducer";
 import CurrencyFormat from "react-currency-format";
 import axios from "./axios";
+import { db } from "./firebase.js";
 
 function Payment() {
   const [{ basket, user }, dispatch] = useStateValue();
@@ -27,7 +28,9 @@ function Payment() {
       const response = await axios({
         method: "post",
         // stripe expects to receive the total in the currency subunits e.g. cents for $
-        url: `/payments/create?total=${Math.round(getBasketTotal(basket) * 100)}`
+        url: `/payments/create?total=${Math.round(
+          getBasketTotal(basket) * 100
+        )}`,
       });
       setClientSecret(response.data.clientSecret);
     };
@@ -36,6 +39,7 @@ function Payment() {
   }, [basket]);
 
   console.log("The secret is >>>>>", clientSecret);
+  console.log("======== user = ", user);
 
   const handleSubmit = async (event) => {
     // do the fancy stripe stuff
@@ -45,11 +49,21 @@ function Payment() {
     const payload = await stripe
       .confirmCardPayment(clientSecret, {
         payment_method: {
-          card: elements.getElement(CardElement)
+          card: elements.getElement(CardElement),
         },
       })
       .then(({ paymentIntent }) => {
         //paymentIntent = the payment confirmation
+        //push into nosql database
+        db.collection("users")
+          .doc(user?.uid)
+          .collection("orders")
+          .doc(paymentIntent.id)
+          .set({
+            basket: basket,
+            amount: paymentIntent.amount,
+            created: paymentIntent.created,
+          });
 
         setSucceeded(true);
         setError(null);
